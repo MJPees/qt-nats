@@ -7,7 +7,7 @@ A [Qt5](https://www.qt.io) C++11 client for the [NATS messaging system](https://
 ## Installation
 
 This is a header-only library that depends on Qt5. All you have to do is include it inside your
-project:
+project. Please see [examples](examples) for more information.
 
 ```
 #include <QCoreApplication>
@@ -115,4 +115,26 @@ client.connect("127.0.0.1", 4222, options, [&client]
 {
     ...
 });
+```
+
+## Qt signals
+
+This is Qt specific. If you are used to using Qt signals & slots or you just prefer them over callbacks:
+
+```
+Nats::Client client;
+
+QObject::connect(&client, &Nats::Client::connected, [&client]
+{
+    Nats::Subscription *s = client.subscribe("foo");
+    QObject::connect(s, &Nats::Subscription::received, [s]
+    {
+        qDebug().noquote() << "received message:" << s->message << s->subject << s->inbox;
+        s->deleteLater();
+    });
+
+    client.publish("foo", "Hello NATS!");
+});
+
+client.connect("127.0.0.1", 4222);
 ```
